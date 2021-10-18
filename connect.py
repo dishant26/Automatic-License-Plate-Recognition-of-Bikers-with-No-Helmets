@@ -7,6 +7,7 @@ import numpy as np
 import cv2
 import csv
 import shutil
+import easyocr
 
 my_dir = os.getcwd()
 
@@ -18,9 +19,9 @@ if os.path.exists(f'{my_dir}\\helpers\\bike_crop_imgs'):
     shutil.rmtree(f'{my_dir}\\helpers\\bike_crop_imgs')
 os.mkdir(f'{my_dir}\\helpers\\bike_crop_imgs\\')
 
-if os.path.exists(f'{my_dir}\\final_output'):
-    shutil.rmtree(f'{my_dir}\\final_output')
-os.mkdir(f'{my_dir}\\final_output\\')
+if os.path.exists(f'{my_dir}\\helpers\\number_plate_dimension'):
+    shutil.rmtree(f'{my_dir}\\helpers\\number_plate_dimension')
+os.mkdir(f'{my_dir}\\helpers\\number_plate_dimension\\')
 
 if os.path.exists(f'{my_dir}\\helpers\\number_plates'):
     shutil.rmtree(f'{my_dir}\\helpers\\number_plates')
@@ -34,7 +35,7 @@ if os.path.exists(f'{my_dir}helpers\\bike_data_csv'):
 
 
 
-image_path = 'C:\\Users\\disha\\Desktop\\Internship\\Datasets\\stage1_data\\images\\val\\193.png'
+image_path = 'C:\\Users\\disha\\Desktop\\Internship\\Datasets\\stage1_data\\images\\train\\49.png'
 
 os.system(f"python detect.py --weights runs/train/exp5/weights/last.pt --img 928 --conf 0.50 --source {image_path}")
 
@@ -59,7 +60,7 @@ final_df = pd.DataFrame()
 
 for i in range(len(bike_imgs_list)):
     img_path = bike_crop_imgs_folder + bike_imgs_list[i]
-    os.system(f"python detect.py --weights runs/train/exp/weights/last.pt --img 928 --conf 0.50 --source {img_path}")
+    os.system(f"python detect.py --weights runs/train/exp/weights/last.pt --img 928 --conf 0.30 --source {img_path}")
 
     if os.path.exists(f'{my_dir}\\helpers\\bike_data_csv\\out.csv'):
         this_df = pd.read_csv(f'{my_dir}\\helpers\\bike_data_csv\\out.csv')
@@ -69,4 +70,35 @@ for i in range(len(bike_imgs_list)):
 
         os.remove(f'{my_dir}\\helpers\\bike_data_csv\\out.csv')
 
-final_df.to_csv(f'{my_dir}\\final_output\\output.csv')
+final_df.to_csv(f'{my_dir}\\helpers\\number_plate_dimension\\output.csv', index=False)
+
+try:
+    plate_dim = pd.read_csv(f"{my_dir}\\helpers\\number_plate_dimension\\output.csv")
+except:
+    pass
+
+
+plate_dim['x1'] = plate_dim['x1'].astype(int)
+plate_dim['x2'] = plate_dim['x2'].astype(int)
+plate_dim['y1'] = plate_dim['y1'].astype(int)
+plate_dim['y2'] = plate_dim['y2'].astype(int)
+
+for i in range(len(plate_dim)):
+    temp = plate_dim['label'][i].split(" ")
+    if temp[0] == "number_plate":
+        path = r'{}'.format(plate_dim['image_path'][i])
+        im = cv2.imread(path)
+        number_plat_crp = im[plate_dim['y1'][i]:plate_dim['y2'][i], plate_dim['x1'][i]:plate_dim['x2'][i]]
+        cv2.imwrite(f'{my_dir}\\helpers\\number_plates\\plate_{i}.png', number_plat_crp)
+
+reader = easyocr.Reader(['en'], gpu=False)
+
+plate_folder_path = f"{my_dir}\\helpers\\number_plates"
+for i in os.listdir(plate_folder_path):
+    plate_path = os.path.join(plate_folder_path, i)
+    result = reader.readtext(plate_path, detail=0)
+    plate_number = " ".join(result)
+    print()
+    print(plate_number)
+
+
