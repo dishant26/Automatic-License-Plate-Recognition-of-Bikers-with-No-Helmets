@@ -12,5 +12,25 @@ Motorcycles have always been the primary mode of transport in developing countri
 
 ## Sample Demo:
 
+**Image from the CCTV Camera:**
 
+ <img src="Assets/49_train.png" width=640px height=360px/>
+
+**Vehicle Detected by the First Stage YOLO:**
+
+ <img src="Assets/49.png" width=640px height=360px/>
+ 
+**Number Plate and Helmet/No Helmet Detected by Second Stage YOLO:**
+
+ <img src="Assets/img_0.png" width=214x height=414px/>
+
+**Number Plate Cropped Automatically:**
+ 
+ <img src="helpers/number_plates/plate_0.png" width=141x height=65px/>
+ 
+ 
+**The Number Plate is Detected using OCR using the Google Cloud Vision/ Tessaract:**
+ 
+ **Detected : MH 12 DZ 2102**
+ 
 </div>
